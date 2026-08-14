@@ -38,6 +38,13 @@ function pickAllowedHeaders(headers) {
 
 // Certificados chegam como env var em base64 (Fly secrets não suportam bem multi-linha/arquivo
 // direto) — decodificados uma vez na subida do processo.
+//
+// Pegadinha conhecida (14/08/2026): gerar o base64 a partir de um PEM extraído com `openssl` no Git
+// Bash/MinGW do Windows produz quebra de linha CRLF (\r\n) dentro do PEM. O Node aceita o certificado
+// (cert.cert funciona), mas a CHAVE privada falha ao decodificar com
+// `error:1E08010C:DECODER routines::unsupported` (ERR_OSSL_UNSUPPORTED) — sintoma nada óbvio pra uma
+// causa tão simples. Sempre gerar o PEM final com `tr -d '\r' < arquivo.pem > arquivo_lf.pem` (ou
+// equivalente) antes de rodar `base64` nele.
 function loadCertPair(envPrefix) {
   const certB64 = process.env[`${envPrefix}_CERT_B64`];
   const keyB64 = process.env[`${envPrefix}_KEY_B64`];
@@ -162,9 +169,7 @@ async function handleRelay(req, res) {
     res.end(upstream.body);
   } catch (err) {
     console.warn('[efi-proxy-fly] Falha ao chamar a Efí:', err.message);
-    // TODO(debug-temp): expõe err.message pra diagnosticar o 502 sem precisar de acesso a log do
-    // Fly. Remover depois de confirmado o fluxo funcionando.
-    jsonResponse(res, 502, { error: 'falha ao chamar a Efí', debug: err.message, code: err.code });
+    jsonResponse(res, 502, { error: 'falha ao chamar a Efí' });
   }
 }
 
