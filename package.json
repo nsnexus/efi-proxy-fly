@@ -1,0 +1,13 @@
+{
+  "name": "efi-proxy-fly",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Relay de mTLS para a API Pix da Efí, rodando fora da Cloudflare (Fly.io).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
