@@ -162,7 +162,9 @@ async function handleRelay(req, res) {
     res.end(upstream.body);
   } catch (err) {
     console.warn('[efi-proxy-fly] Falha ao chamar a Efí:', err.message);
-    jsonResponse(res, 502, { error: 'falha ao chamar a Efí' });
+    // TODO(debug-temp): expõe err.message pra diagnosticar o 502 sem precisar de acesso a log do
+    // Fly. Remover depois de confirmado o fluxo funcionando.
+    jsonResponse(res, 502, { error: 'falha ao chamar a Efí', debug: err.message, code: err.code });
   }
 }
 
